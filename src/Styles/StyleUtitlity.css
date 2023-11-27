@@ -1,0 +1,11 @@
+.no-appearance {
+    appearance: none;
+}
+
+input[type="checkbox"]::after{
+    font-family: "Font Awesome 6 Free";
+    content: "\f00c";
+    font-weight: bolder;
+    color: white;
+
+}
