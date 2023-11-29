@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../Context/AppContext';
 import moment from 'moment';
+import axios from 'axios';  // Import axios
 
 const Table = () => {
   const [tableData, setTableData] = useState([]);
@@ -12,7 +13,7 @@ const Table = () => {
     const fetchData = async () => {
       try {
         const response = await axios('https://ipangram-backend.onrender.com/api/json/all');
-        const data = await response.data; // Assuming the response is in JSON format
+        const data = await response.data; 
         setJsonData(data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -39,16 +40,29 @@ const Table = () => {
     setTableData(days);
   };
 
-  console.log(jsonData);
-
-  const getTimeFromData = (date) => {
-    const matchingData = jsonData.find(item => item.Date === date);
-    if (matchingData) {
-      const [jsonHour, jsonMinute] = matchingData.Time.split(':');
+  const getTimeFromData = (data) => {
+    if (data.length > 0) {
+      const [jsonHour, jsonMinute] = data[0].Time.split(':');
       return { jsonHour, jsonMinute };
     }
     return { jsonHour: undefined, jsonMinute: undefined };
   };
+
+  const handleCheckboxChange = (hour, minute) => {
+  // Assuming you have a state variable to store the checked state
+  const updatedJsonData = [...jsonData]; // Create a copy of the array
+  const checkboxIndex = updatedJsonData.findIndex(item => item.Time === `${hour}:${minute}`);
+
+  if (checkboxIndex !== -1) {
+    // Toggle the checked state
+    updatedJsonData[checkboxIndex].checked = !updatedJsonData[checkboxIndex].checked;
+    setJsonData(updatedJsonData);
+  }
+
+  // Update the state or perform any other actions based on the checkbox change
+  console.log(`Checkbox changed for ${hour}:${minute}`);
+};
+
 
   return (
     <div className="w-full h-auto flex flex-col items-center">
@@ -73,16 +87,17 @@ const Table = () => {
                       <div className="mr-[10px] w-[90px] text-gray-500 text-sm">Past</div>
                     ) : (
                       Array.from({ length: 31 }).map((_, timeIndex) => {
-                        const hour = Math.floor(timeIndex / 2) + 8;
+                        const hour = (Math.floor(timeIndex / 2) + 8) + parseInt(selectedOption.replace("UTC", ""), 10);
                         const minute = timeIndex % 2 === 0 ? '00' : '30';
                         const generatedTime = `${hour}:${minute}`;
-                        const { jsonHour, jsonMinute } = getTimeFromData(day.date);
+                        const { jsonHour, jsonMinute } = getTimeFromData(jsonData);
 
                         return (
                           <div key={timeIndex} className="mr-[10px] w-[90px] flex items-center gap-1">
                             <input
                               type="checkbox"
-                              checked={jsonHour === String(hour) && jsonMinute === String(minute)}
+                              checked={jsonHour === hour && jsonMinute === minute}
+                              onChange={() => handleCheckboxChange(hour, minute)} // Fix: Remove the curly braces
                               className="appearance-none w-4 h-4 my-[5px] bg-white border-[1.5px] cursor-pointer
                               border-blue-200 hover:border-blue-400 checked:bg-green-500 checked:border-none flex items-center
                               justify-center"
