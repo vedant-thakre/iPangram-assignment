@@ -42,27 +42,22 @@ const Table = () => {
 
   const getTimeFromData = (data) => {
     if (data.length > 0) {
+      // Assuming the time is in the format HH:mm:ss
       const [jsonHour, jsonMinute] = data[0].Time.split(':');
       return { jsonHour, jsonMinute };
     }
     return { jsonHour: undefined, jsonMinute: undefined };
   };
 
-  const handleCheckboxChange = (hour, minute) => {
-  // Assuming you have a state variable to store the checked state
-  const updatedJsonData = [...jsonData]; // Create a copy of the array
-  const checkboxIndex = updatedJsonData.findIndex(item => item.Time === `${hour}:${minute}`);
+  const handleCheckboxChange = (date, hour, minute) => {
+    const updatedJsonData = jsonData.map(item => {
+      // Check if the date and time match
+      const isMatching = item.Date === date && item.Time === `${hour}:${minute}`;
+      return { ...item, checked: isMatching };
+    });
 
-  if (checkboxIndex !== -1) {
-    // Toggle the checked state
-    updatedJsonData[checkboxIndex].checked = !updatedJsonData[checkboxIndex].checked;
     setJsonData(updatedJsonData);
-  }
-
-  // Update the state or perform any other actions based on the checkbox change
-  console.log(`Checkbox changed for ${hour}:${minute}`);
-};
-
+  };
 
   return (
     <div className="w-full h-auto flex flex-col items-center">
@@ -97,7 +92,7 @@ const Table = () => {
                             <input
                               type="checkbox"
                               checked={jsonHour === hour && jsonMinute === minute}
-                              onChange={() => handleCheckboxChange(hour, minute)} // Fix: Remove the curly braces
+                              onChange={() => handleCheckboxChange(day.date, hour, minute)} 
                               className="appearance-none w-4 h-4 my-[5px] bg-white border-[1.5px] cursor-pointer
                               border-blue-200 hover:border-blue-400 checked:bg-green-500 checked:border-none flex items-center
                               justify-center"
